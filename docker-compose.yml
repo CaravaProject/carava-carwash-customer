@@ -1,24 +1,17 @@
 services:
-  app:
+  customer-app:
     env_file:
       - .env
     build: .
-    container_name: app
+    container_name: carava-customer-app
     ports:
-      - 8080:8080
+      - 8081:8080
     restart: always
-    depends_on:
-      - db
-  db:
-    image: postgres:17
-    environment:
-      - POSTGRES_USER=${DB_USERNAME}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    restart: always
-volumes:
-  postgres-data:
+    networks:
+      - carwash-network
+
+networks:
+  carwash-network:
+    name: carwash-network
+    driver: bridge
+    external: true

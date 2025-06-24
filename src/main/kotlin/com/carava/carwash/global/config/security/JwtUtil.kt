@@ -32,20 +32,12 @@ class JwtUtil {
             .setSubject(email)
             .setIssuedAt(now)
             .setExpiration(expiryDate)
-
-            .claim("userType", userType.name)
-
             .signWith(getSigningKey(), SignatureAlgorithm.HS256)
             .compact()
     }
 
     fun getEmailFromToken(token: String): String {
         return getClaims(token).subject
-    }
-
-    fun getUserTypeFromToken(token: String): UserType {
-        val roleString = getClaims(token)["userType"] as String
-        return UserType.valueOf(roleString)
     }
 
     fun validateToken(token: String): Boolean {

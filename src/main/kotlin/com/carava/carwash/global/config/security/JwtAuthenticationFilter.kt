@@ -1,8 +1,6 @@
 package com.carava.carwash.global.config.security
 
-import com.carava.carwash.customer.service.CustomerUserDetailsService
-import com.carava.carwash.global.constants.UserType
-import com.carava.carwash.owner.service.OwnerUserDetailsService
+import com.carava.carwash.auth.service.UserDetailsService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -15,8 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthenticationFilter(
     private val jwtUtil: JwtUtil,
-    private val customerUserDetailsService: CustomerUserDetailsService,
-    private val ownerUserDetailsService: OwnerUserDetailsService
+    private val userDetailsService: UserDetailsService
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -28,11 +25,6 @@ class JwtAuthenticationFilter(
 
             if (token != null && jwtUtil.validateToken(token)) {
                 val email = jwtUtil.getEmailFromToken(token)
-                val userType = jwtUtil.getUserTypeFromToken(token)
-                val userDetailsService = when(userType) {
-                    UserType.CUSTOMER -> customerUserDetailsService
-                    UserType.OWNER -> ownerUserDetailsService
-                }
 
                 val userDetails = userDetailsService.loadUserByUsername(email)
                 val authentication = UsernamePasswordAuthenticationToken(

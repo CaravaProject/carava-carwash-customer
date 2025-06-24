@@ -1,1 +1,1 @@
-rootProject.name = "basicLogin"
+rootProject.name = "carava-carwash-customer"
