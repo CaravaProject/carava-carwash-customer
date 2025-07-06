@@ -1,0 +1,17 @@
+services:
+  customer-app:
+    env_file:
+      - .env
+    build: .
+    container_name: carava-customer-app
+    ports:
+      - 8081:8080
+    restart: always
+    networks:
+      - carwash-network
+
+networks:
+  carwash-network:
+    name: carwash-network
+    driver: bridge
+    external: true
