@@ -7,7 +7,7 @@ import com.carava.carwash.reservation.entity.Reservation
 import com.carava.carwash.reservation.entity.ReservationMenu
 import com.carava.carwash.reservation.repository.ReservationMenuRepository
 import com.carava.carwash.reservation.repository.ReservationRepository
-import com.carava.carwash.shared.dto.ApiResponse
+import com.carava.carwash.global.dto.ApiResponse
 import com.carava.carwash.store.entity.StoreStatus
 import com.carava.carwash.store.repository.StoreRepository
 import org.springframework.data.domain.Page
@@ -61,11 +61,11 @@ class ReservationService(
         val totalAmount = menus.sumOf { it.price }
         val estimatedDuration = menus.sumOf { it.duration }
 
-        // 6. 예약 생성
-        val reservation = Reservation(
+        // 6. 예약 생성 (차량 정보 스냅샷과 함께)
+        val reservation = Reservation.create(
             customerMemberId = customerId,
             storeId = request.storeId,
-            carId = request.carId,
+            car = car, // 차량 정보 스냅샷 자동 저장
             reservationDate = request.reservationDate,
             reservationTime = request.reservationTime,
             totalAmount = totalAmount,
@@ -102,7 +102,7 @@ class ReservationService(
         val responseDto = ReservationResponseDto.from(
             reservation = savedReservation,
             storeName = store.name,
-            carDisplayName = car.getDisplayName(),
+            carDisplayName = savedReservation.carDisplayName, // ✅ 스냅샷된 차량 정보 사용
             menus = menuDtos
         )
 
@@ -117,12 +117,12 @@ class ReservationService(
         val reservations = reservationRepository.findByCustomerMemberId(customerId, pageable)
         
         val responseDto = reservations.map { reservation ->
-            // 기본 정보만 포함하는 간단한 응답 (실제로는 JOIN이나 별도 조회 필요)
+            // 스냅샷된 차량 정보 사용
             ReservationListResponseDto(
                 id = reservation.id,
                 storeId = reservation.storeId,
                 storeName = "매장명", // TODO: 실제 매장명 조회
-                carDisplayName = "차량명", // TODO: 실제 차량명 조회
+                carDisplayName = reservation.carDisplayName, // ✅ 스냅샷된 차량 정보 사용
                 reservationDate = reservation.reservationDate,
                 reservationTime = reservation.reservationTime,
                 status = reservation.status,
@@ -146,10 +146,7 @@ class ReservationService(
             throw IllegalArgumentException("다른 고객의 예약입니다")
         }
 
-        // 관련 정보 조회
-        val car = carRepository.findById(reservation.carId)
-            .orElseThrow { IllegalArgumentException("차량 정보를 찾을 수 없습니다") }
-        
+        // 관련 매장 정보 조회 (차량 정보는 스냅샷 사용)
         val store = storeRepository.findById(reservation.storeId)
             .orElseThrow { IllegalArgumentException("매장 정보를 찾을 수 없습니다") }
 
@@ -175,7 +172,7 @@ class ReservationService(
         val responseDto = ReservationResponseDto.from(
             reservation = reservation,
             storeName = store.name,
-            carDisplayName = car.getDisplayName(),
+            carDisplayName = reservation.carDisplayName, // ✅ 스냅샷된 차량 정보 사용
             menus = menuDtos
         )
 
@@ -201,6 +198,6 @@ class ReservationService(
         val cancelledReservation = reservation.cancel(reason)
         reservationRepository.save(cancelledReservation)
 
-        return ApiResponse.success("예약이 취소되었습니다")
+        return ApiResponse.success<Nothing>(data = null, message = "예약이 취소되었습니다")
     }
 } 

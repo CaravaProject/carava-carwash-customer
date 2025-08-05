@@ -107,7 +107,15 @@ class ReservationServiceTest {
             totalAmount = BigDecimal("40000"),
             finalAmount = BigDecimal("40000"),
             customerRequest = request.customerRequest,
-            estimatedDuration = 90
+            estimatedDuration = 90,
+            // 차량 정보 스냅샷 (테스트용)
+            carBrand = car.brand,
+            carModel = car.model,
+            carYear = car.year,
+            carColor = car.color,
+            carLicensePlate = car.licensePlate,
+            carType = car.carType,
+            carDisplayName = car.getDisplayName()
         )
 
         every { carRepository.findById(request.carId) } returns java.util.Optional.of(car)
@@ -220,7 +228,15 @@ class ReservationServiceTest {
                 reservationTime = LocalTime.of(10, 0),
                 status = ReservationStatus.PENDING,
                 totalAmount = BigDecimal("30000"),
-                finalAmount = BigDecimal("30000")
+                finalAmount = BigDecimal("30000"),
+                // 차량 정보 스냅샷 (테스트용 더미 데이터)
+                carBrand = "현대",
+                carModel = "아반떼",
+                carYear = 2023,
+                carColor = "화이트",
+                carLicensePlate = "12가3456",
+                carType = CarType.SEDAN,
+                carDisplayName = "현대 아반떼 (2023년, 화이트)"
             )
         )
 
@@ -251,7 +267,15 @@ class ReservationServiceTest {
             reservationTime = LocalTime.of(10, 0),
             status = ReservationStatus.PENDING,
             totalAmount = BigDecimal("30000"),
-            finalAmount = BigDecimal("30000")
+            finalAmount = BigDecimal("30000"),
+            // 차량 정보 스냅샷 (테스트용 더미 데이터)
+            carBrand = "현대",
+            carModel = "아반떼",
+            carYear = 2023,
+            carColor = "화이트",
+            carLicensePlate = "12가3456",
+            carType = CarType.SEDAN,
+            carDisplayName = "현대 아반떼 (2023년, 화이트)"
         )
 
         val cancelledReservation = reservation.cancel(reason)

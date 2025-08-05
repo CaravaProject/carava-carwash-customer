@@ -1,6 +1,8 @@
 package com.carava.carwash.reservation.entity
 
-import com.carava.carwash.shared.entity.BaseEntity
+import com.carava.carwash.car.entity.Car
+import com.carava.carwash.car.entity.CarType
+import com.carava.carwash.global.entity.BaseEntity
 import jakarta.persistence.*
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -62,7 +64,30 @@ data class Reservation(
     var rejectionReason: String? = null,
 
     @Column(name = "estimated_duration")
-    var estimatedDuration: Int? = null // 예상 소요시간 (분)
+    var estimatedDuration: Int? = null, // 예상 소요시간 (분)
+
+    // ✅ 예약 시점 차량 정보 스냅샷 (불변 데이터)
+    @Column(name = "car_brand", nullable = false, length = 50)
+    var carBrand: String,
+
+    @Column(name = "car_model", nullable = false, length = 50)
+    var carModel: String,
+
+    @Column(name = "car_year", nullable = false)
+    var carYear: Int,
+
+    @Column(name = "car_color", length = 30)
+    var carColor: String? = null,
+
+    @Column(name = "car_license_plate", nullable = false, length = 20)
+    var carLicensePlate: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "car_type", nullable = false)
+    var carType: CarType,
+
+    @Column(name = "car_display_name", nullable = false, length = 200)
+    var carDisplayName: String
 
 ) : BaseEntity() {
 
@@ -137,5 +162,43 @@ data class Reservation(
         val reservationDateTime = LocalDateTime.of(reservationDate, reservationTime)
         val now = LocalDateTime.now()
         return now.isBefore(reservationDateTime.minusHours(2))
+    }
+
+    companion object {
+        /**
+         * 예약 생성 시 차량 정보 스냅샷과 함께 생성
+         */
+        fun create(
+            customerMemberId: Long,
+            storeId: Long,
+            car: Car,
+            reservationDate: LocalDate,
+            reservationTime: LocalTime,
+            totalAmount: BigDecimal,
+            finalAmount: BigDecimal,
+            customerRequest: String? = null,
+            estimatedDuration: Int? = null
+        ): Reservation {
+            return Reservation(
+                customerMemberId = customerMemberId,
+                storeId = storeId,
+                carId = car.id,
+                reservationDate = reservationDate,
+                reservationTime = reservationTime,
+                totalAmount = totalAmount,
+                finalAmount = finalAmount,
+                customerRequest = customerRequest,
+                estimatedDuration = estimatedDuration,
+                
+                // 차량 정보 스냅샷 저장
+                carBrand = car.brand,
+                carModel = car.model,
+                carYear = car.year,
+                carColor = car.color,
+                carLicensePlate = car.licensePlate,
+                carType = car.carType,
+                carDisplayName = car.getDisplayName()
+            )
+        }
     }
 } 
