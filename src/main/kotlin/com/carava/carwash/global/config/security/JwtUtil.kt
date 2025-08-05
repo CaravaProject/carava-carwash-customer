@@ -1,61 +1,77 @@
 package com.carava.carwash.global.config.security
 
-import com.carava.carwash.global.constants.UserType
 import io.jsonwebtoken.Claims
-import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.security.Key
+import java.nio.charset.StandardCharsets
 import java.util.*
+import javax.crypto.SecretKey
 
 @Component
-class JwtUtil {
-
-    @Value("\${jwt.secret:mySecretKeyForJWTTokenGenerationThatShouldBeLongEnough}")
-    private lateinit var secretKey: String
-
-    @Value("\${jwt.expiration:86400000}") // 24시간
-    private val expiration: Long = 86400000
-
-    private fun getSigningKey(): Key {
-        return Keys.hmacShaKeyFor(secretKey.toByteArray())
+class JwtUtil(
+    @Value("\${jwt.secret}")
+    private val secretKey: String,
+    
+    @Value("\${jwt.access-token-expire-time}")
+    private val accessTokenExpireTime: Long,
+    
+    @Value("\${jwt.refresh-token-expire-time}")
+    private val refreshTokenExpireTime: Long
+) {
+    
+    private val key: SecretKey = Keys.hmacShaKeyFor(secretKey.toByteArray(StandardCharsets.UTF_8))
+    
+    fun generateAccessToken(email: String, userType: String): String {
+        return generateToken(email, userType, accessTokenExpireTime)
     }
-
-    fun generateToken(email: String, userType: UserType): String {
-        val now = Date()
-        val expiryDate = Date(now.time + expiration)
-
+    
+    fun generateRefreshToken(email: String, userType: String): String {
+        return generateToken(email, userType, refreshTokenExpireTime)
+    }
+    
+    private fun generateToken(email: String, userType: String, expireTime: Long): String {
+        val claims = mapOf(
+            "email" to email,
+            "userType" to userType
+        )
+        
         return Jwts.builder()
+            .setClaims(claims)
             .setSubject(email)
-            .setIssuedAt(now)
-            .setExpiration(expiryDate)
-            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .setIssuedAt(Date())
+            .setExpiration(Date(System.currentTimeMillis() + expireTime))
+            .signWith(key, SignatureAlgorithm.HS256)
             .compact()
     }
-
-    fun getEmailFromToken(token: String): String {
-        return getClaims(token).subject
-    }
-
+    
     fun validateToken(token: String): Boolean {
         return try {
-            getClaims(token)
+            Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
             true
-        } catch (e: JwtException) {
-            false
-        } catch (e: IllegalArgumentException) {
+        } catch (e: Exception) {
             false
         }
     }
-
+    
+    fun getEmailFromToken(token: String): String {
+        return getClaims(token).subject
+    }
+    
+    fun getUserTypeFromToken(token: String): String {
+        return getClaims(token)["userType"] as String
+    }
+    
     private fun getClaims(token: String): Claims {
         return Jwts.parserBuilder()
-            .setSigningKey(getSigningKey())
+            .setSigningKey(key)
             .build()
             .parseClaimsJws(token)
             .body
     }
-}
+} 

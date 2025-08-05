@@ -5,7 +5,7 @@ import com.carava.carwash.auth.dto.SignUpRequestDto
 import com.carava.carwash.auth.entity.Auth
 import com.carava.carwash.auth.entity.UserType
 import com.carava.carwash.auth.repository.AuthRepository
-import com.carava.carwash.auth.util.JwtUtil
+import com.carava.carwash.global.config.security.JwtUtil
 import com.carava.carwash.member.entity.CustomerMember
 import com.carava.carwash.member.repository.CustomerMemberRepository
 import io.mockk.every

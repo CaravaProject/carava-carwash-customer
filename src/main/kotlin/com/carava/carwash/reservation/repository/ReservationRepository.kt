@@ -19,6 +19,15 @@ interface ReservationRepository : JpaRepository<Reservation, Long> {
     
     fun findByStoreIdAndReservationDate(storeId: Long, reservationDate: LocalDate): List<Reservation>
     
+    /**
+     * 특정 매장, 날짜, 상태 목록으로 예약 조회
+     */
+    fun findByStoreIdAndReservationDateAndStatusIn(
+        storeId: Long,
+        reservationDate: LocalDate,
+        statuses: List<ReservationStatus>
+    ): List<Reservation>
+    
     fun existsByStoreIdAndReservationDateAndReservationTime(
         storeId: Long,
         reservationDate: LocalDate,

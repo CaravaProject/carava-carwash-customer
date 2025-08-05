@@ -11,7 +11,7 @@ class UserDetailsService (
 ) : UserDetailsService {
     override fun loadUserByUsername(username: String): org.springframework.security.core.userdetails.UserDetails {
         val auth = authRepository.findByEmail(username)
-            .orElseThrow { UsernameNotFoundException("customer - 사용자를 찾을 수 없습니다.") }
+            ?: throw UsernameNotFoundException("customer - 사용자를 찾을 수 없습니다.")
 
         return com.carava.carwash.auth.security.UserDetails(auth)
     }

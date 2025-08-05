@@ -3,9 +3,9 @@ spring:
     name: carava-carwash-customer
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/carwash_db
-    username: carwash_user
-    password: carwash_password
+    url: jdbc:postgresql://localhost:5432/carvana
+    username: carvana_admin
+    password: Carvana2024!
     driver-class-name: org.postgresql.Driver
 
   jpa:

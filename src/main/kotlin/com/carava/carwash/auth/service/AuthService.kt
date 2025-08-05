@@ -4,10 +4,10 @@ import com.carava.carwash.auth.dto.*
 import com.carava.carwash.auth.entity.Auth
 import com.carava.carwash.auth.entity.UserType
 import com.carava.carwash.auth.repository.AuthRepository
-import com.carava.carwash.auth.util.JwtUtil
+import com.carava.carwash.global.config.security.JwtUtil
 import com.carava.carwash.member.entity.CustomerMember
 import com.carava.carwash.member.repository.CustomerMemberRepository
-import com.carava.carwash.shared.dto.ApiResponse
+import com.carava.carwash.global.dto.ApiResponse
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

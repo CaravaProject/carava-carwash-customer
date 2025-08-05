@@ -1,8 +1,9 @@
 package com.carava.carwash.store.entity
 
-import com.carava.carwash.shared.entity.BaseEntity
+import com.carava.carwash.global.entity.BaseEntity
 import jakarta.persistence.*
 import java.math.BigDecimal
+import java.time.LocalTime
 
 @Entity
 @Table(
@@ -51,7 +52,22 @@ data class Store(
     var viewCount: Int = 0,
 
     @Column(name = "favorite_count")
-    var favoriteCount: Int = 0
+    var favoriteCount: Int = 0,
+
+    @Column(name = "open_time", nullable = false)
+    var openTime: LocalTime = LocalTime.of(9, 0), // 기본 오전 9시
+
+    @Column(name = "close_time", nullable = false)
+    var closeTime: LocalTime = LocalTime.of(18, 0), // 기본 오후 6시
+
+    @Column(name = "break_start_time")
+    var breakStartTime: LocalTime? = null, // 휴게시간 시작 (선택사항)
+
+    @Column(name = "break_end_time")
+    var breakEndTime: LocalTime? = null, // 휴게시간 종료 (선택사항)
+
+    @Column(name = "is_24_hours", nullable = false)
+    var is24Hours: Boolean = false // 24시간 운영 여부
 
 ) : BaseEntity() {
 
@@ -88,6 +104,40 @@ data class Store(
     fun decreaseFavoriteCount() {
         if (this.favoriteCount > 0) {
             this.favoriteCount--
+        }
+    }
+
+    /**
+     * 현재 시간이 영업시간인지 확인
+     */
+    fun isOpenAt(time: LocalTime): Boolean {
+        if (is24Hours) return true
+        
+        return if (breakStartTime != null && breakEndTime != null) {
+            // 휴게시간이 있는 경우
+            (time >= openTime && time < breakStartTime) || 
+            (time >= breakEndTime && time < closeTime)
+        } else {
+            // 휴게시간이 없는 경우
+            time >= openTime && time < closeTime
+        }
+    }
+
+    /**
+     * 영업시간 내에서 예약 가능한 시간인지 확인
+     */
+    fun canMakeReservationAt(startTime: LocalTime, endTime: LocalTime): Boolean {
+        if (!isActive()) return false
+        if (is24Hours) return true
+        
+        return if (breakStartTime != null && breakEndTime != null) {
+            // 휴게시간과 겹치지 않는지 확인
+            val noBreakConflict = endTime <= breakStartTime || startTime >= breakEndTime
+            val withinBusinessHours = startTime >= openTime && endTime <= closeTime
+            
+            noBreakConflict && withinBusinessHours
+        } else {
+            startTime >= openTime && endTime <= closeTime
         }
     }
 } 

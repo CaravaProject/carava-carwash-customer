@@ -4,7 +4,7 @@ import com.carava.carwash.reservation.dto.CreateReservationRequestDto
 import com.carava.carwash.reservation.dto.ReservationListResponseDto
 import com.carava.carwash.reservation.dto.ReservationResponseDto
 import com.carava.carwash.reservation.service.ReservationService
-import com.carava.carwash.shared.dto.ApiResponse
+import com.carava.carwash.global.dto.ApiResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse as SwaggerApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
