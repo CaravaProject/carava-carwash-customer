@@ -1,6 +1,6 @@
 package com.carava.carwash.image.controller
 
-import com.carava.carwash.global.config.security.JwtUtil
+import com.carava.carwash.global.annotation.CurrentMemberId
 import com.carava.carwash.global.dto.ApiResponse
 import com.carava.carwash.image.dto.ImageListResponseDto
 import com.carava.carwash.image.dto.ImageUploadResponseDto
@@ -50,13 +50,11 @@ class ImageUploadController(
         @Parameter(description = "이미지 설명")
         @RequestParam("description", required = false) description: String?,
         
-        @RequestHeader("Authorization") token: String
+        @CurrentMemberId customerId: Long
     ): ResponseEntity<ApiResponse<ImageUploadResponseDto>> {
-        // TODO: 실제 사용자 ID 조회 로직 구현 필요 (현재는 토큰에서 추출하지만 사용하지 않음)
-        // val userEmail = jwtUtil.getEmailFromToken(token.removePrefix("Bearer "))
-        val userId = 1L
+
         
-        val result = imageUploadService.uploadImage(file, userId, category, description)
+        val result = imageUploadService.uploadImage(file, customerId, category, description)
         
         return if (result.success) {
             ResponseEntity.ok(result)
@@ -87,13 +85,11 @@ class ImageUploadController(
         @Parameter(description = "연결할 엔티티 ID", required = true)
         @RequestParam("entityId") entityId: Long,
         
-        @RequestHeader("Authorization") token: String
+        @CurrentMemberId customerId: Long
     ): ResponseEntity<ApiResponse<ImageUploadResponseDto>> {
-        // TODO: 실제 사용자 ID 조회 로직 구현 필요 (현재는 토큰에서 추출하지만 사용하지 않음)
-        // val userEmail = jwtUtil.getEmailFromToken(token.removePrefix("Bearer "))
-        val userId = 1L
+
         
-        val result = imageUploadService.linkImageToEntity(imageId, userId, entityType, entityId)
+        val result = imageUploadService.linkImageToEntity(imageId, customerId, entityType, entityId)
         
         return when {
             result.success -> ResponseEntity.ok(result)
@@ -123,13 +119,11 @@ class ImageUploadController(
         @RequestParam("entityId", required = false) entityId: Long?,
         
         @PageableDefault(size = 20) pageable: Pageable,
-        @RequestHeader("Authorization") token: String
+        @CurrentMemberId customerId: Long
     ): ResponseEntity<ApiResponse<Page<ImageListResponseDto>>> {
-        // TODO: 실제 사용자 ID 조회 로직 구현 필요 (현재는 토큰에서 추출하지만 사용하지 않음)
-        // val userEmail = jwtUtil.getEmailFromToken(token.removePrefix("Bearer "))
-        val userId = 1L
+
         
-        val result = imageUploadService.getUserImages(userId, category, entityType, entityId, pageable)
+        val result = imageUploadService.getUserImages(customerId, category, entityType, entityId, pageable)
         
         return if (result.success) {
             ResponseEntity.ok(result)
@@ -158,13 +152,11 @@ class ImageUploadController(
         @RequestParam("category", required = false) category: ImageCategory?,
         
         @PageableDefault(size = 20) pageable: Pageable,
-        @RequestHeader("Authorization") token: String
+        @CurrentMemberId customerId: Long
     ): ResponseEntity<ApiResponse<Page<ImageListResponseDto>>> {
-        // TODO: 실제 사용자 ID 조회 로직 구현 필요 (현재는 토큰에서 추출하지만 사용하지 않음)
-        // val userEmail = jwtUtil.getEmailFromToken(token.removePrefix("Bearer "))
-        val userId = 1L
+
         
-        val result = imageUploadService.getUserImages(userId, category, entityType, entityId, pageable)
+        val result = imageUploadService.getUserImages(customerId, category, entityType, entityId, pageable)
         
         return if (result.success) {
             ResponseEntity.ok(result)
@@ -188,13 +180,11 @@ class ImageUploadController(
         @Parameter(description = "삭제할 이미지 ID", required = true)
         @PathVariable imageId: Long,
         
-        @RequestHeader("Authorization") token: String
+        @CurrentMemberId customerId: Long
     ): ResponseEntity<ApiResponse<Unit>> {
-        // TODO: 실제 사용자 ID 조회 로직 구현 필요 (현재는 토큰에서 추출하지만 사용하지 않음)
-        // val userEmail = jwtUtil.getEmailFromToken(token.removePrefix("Bearer "))
-        val userId = 1L
+
         
-        val result = imageUploadService.deleteImage(imageId, userId)
+        val result = imageUploadService.deleteImage(imageId, customerId)
         
         return when {
             result.success -> ResponseEntity.ok(result)
@@ -218,14 +208,12 @@ class ImageUploadController(
         @RequestParam("category", required = false) category: ImageCategory?,
         
         @PageableDefault(size = 20) pageable: Pageable,
-        @RequestHeader("Authorization") token: String
+        @CurrentMemberId customerId: Long
     ): ResponseEntity<ApiResponse<Page<ImageListResponseDto>>> {
-        // TODO: 실제 사용자 ID 조회 로직 구현 필요 (현재는 토큰에서 추출하지만 사용하지 않음)
-        // val userEmail = jwtUtil.getEmailFromToken(token.removePrefix("Bearer "))
-        val userId = 1L
+
         
         // entityType과 entityId가 null인 경우 = 임시 이미지
-        val result = imageUploadService.getUserImages(userId, category, null, null, pageable)
+        val result = imageUploadService.getUserImages(customerId, category, null, null, pageable)
         
         return if (result.success) {
             ResponseEntity.ok(result)
