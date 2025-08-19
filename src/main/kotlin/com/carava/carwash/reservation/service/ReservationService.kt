@@ -1,16 +1,17 @@
 package com.carava.carwash.reservation.service
 
 import com.carava.carwash.car.repository.CarRepository
+import com.carava.carwash.global.dto.ApiResponse
+import com.carava.carwash.global.exception.*
+import com.carava.carwash.image.service.ImageUploadService
 import com.carava.carwash.menu.repository.MenuRepository
 import com.carava.carwash.reservation.dto.*
 import com.carava.carwash.reservation.entity.Reservation
 import com.carava.carwash.reservation.entity.ReservationMenu
 import com.carava.carwash.reservation.repository.ReservationMenuRepository
 import com.carava.carwash.reservation.repository.ReservationRepository
-import com.carava.carwash.global.dto.ApiResponse
 import com.carava.carwash.store.entity.StoreStatus
 import com.carava.carwash.store.repository.StoreRepository
-import com.carava.carwash.image.service.ImageUploadService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -34,29 +35,29 @@ class ReservationService(
     ): ApiResponse<ReservationResponseDto> {
         // 1. 차량 소유권 확인
         val car = carRepository.findById(request.carId)
-            .orElseThrow { IllegalArgumentException("존재하지 않는 차량입니다") }
+            .orElseThrow { CarNotFoundException() }
         
         if (car.customerMemberId != customerId) {
-            throw IllegalArgumentException("다른 고객의 차량으로는 예약할 수 없습니다")
+            throw UnauthorizedCarAccessException()
         }
 
         // 2. 매장 상태 확인
         val store = storeRepository.findByIdAndStatus(request.storeId, StoreStatus.ACTIVE)
-            ?: throw IllegalArgumentException("운영 중이지 않은 매장입니다")
+            ?: throw StoreNotFoundException("운영 중이지 않은 매장입니다")
 
         // 3. 메뉴 유효성 확인
         val menus = menuRepository.findByIdInAndIsActive(request.menuIds, true)
         if (menus.size != request.menuIds.size) {
-            throw IllegalArgumentException("일부 메뉴가 존재하지 않거나 비활성화되었습니다")
+            throw MenuNotFoundException("일부 메뉴가 존재하지 않거나 비활성화되었습니다")
         }
         if (menus.any { it.storeId != request.storeId }) {
-            throw IllegalArgumentException("다른 매장의 메뉴는 선택할 수 없습니다")
+            throw MenuNotFoundException("다른 매장의 메뉴는 선택할 수 없습니다")
         }
 
         // 4. 중복 예약 시간 확인
         if (reservationRepository.existsByStoreIdAndReservationDateAndReservationTime(
                 request.storeId, request.reservationDate, request.reservationTime)) {
-            throw IllegalArgumentException("해당 시간에 이미 예약이 있습니다")
+            throw InvalidReservationTimeException("해당 시간에 이미 예약이 있습니다")
         }
 
         // 5. 금액 계산
