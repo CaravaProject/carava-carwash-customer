@@ -26,5 +26,7 @@ data class CreateReservationRequestDto(
     @field:NotEmpty(message = "메뉴는 최소 하나 이상 선택해야 합니다")
     val menuIds: List<Long>,
 
-    val customerRequest: String? = null
+    val customerRequest: String? = null,
+
+    val beforeImageIds: List<Long>? = null
 ) 

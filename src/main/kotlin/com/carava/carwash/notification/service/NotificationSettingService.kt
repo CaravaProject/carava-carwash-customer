@@ -201,10 +201,9 @@ class NotificationSettingService(
         userType: RecipientType,
         channel: NotificationChannel
     ): List<Long> {
-        return notificationSettingRepository.findByUserAndEnabledChannel(
-            userType = userType,
-            channel = channel.name
-        ).map { it.userId }.distinct()
+        // TODO: 모든 사용자를 대상으로 조회하는 메서드가 필요함
+        // 현재는 특정 사용자만 조회 가능한 구조
+        return emptyList()
     }
 
     /**

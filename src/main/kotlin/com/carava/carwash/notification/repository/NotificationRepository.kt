@@ -162,4 +162,31 @@ interface NotificationRepository : JpaRepository<Notification, Long> {
         @Param("startTime") startTime: LocalDateTime,
         @Param("endTime") endTime: LocalDateTime
     ): List<Notification>
+
+    // === API Controller용 메서드 ===
+
+    /**
+     * 사용자별 알림 목록 조회 (최신순)
+     */
+    fun findByRecipientIdOrderByCreatedAtDesc(recipientId: Long, pageable: Pageable): Page<Notification>
+
+    /**
+     * 사용자별 읽지 않은 알림 목록 조회 (최신순)
+     */
+    fun findByRecipientIdAndReadAtIsNullOrderByCreatedAtDesc(recipientId: Long, pageable: Pageable): Page<Notification>
+
+    /**
+     * 특정 사용자의 특정 알림 조회
+     */
+    fun findByIdAndRecipientId(id: Long, recipientId: Long): Notification?
+
+    /**
+     * 사용자별 읽지 않은 알림 개수 조회
+     */
+    fun countByRecipientIdAndReadAtIsNull(recipientId: Long): Long
+
+    /**
+     * 사용자별 읽지 않은 알림 목록 조회
+     */
+    fun findByRecipientIdAndReadAtIsNull(recipientId: Long): List<Notification>
 }

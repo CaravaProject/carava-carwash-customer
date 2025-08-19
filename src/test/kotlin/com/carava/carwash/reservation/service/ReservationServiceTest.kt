@@ -15,6 +15,7 @@ import com.carava.carwash.store.entity.Store
 import com.carava.carwash.store.entity.StoreCategory
 import com.carava.carwash.store.entity.StoreStatus
 import com.carava.carwash.store.repository.StoreRepository
+import com.carava.carwash.image.service.ImageUploadService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -37,12 +38,15 @@ class ReservationServiceTest {
     private val menuRepository = mockk<MenuRepository>()
     private val reservationMenuRepository = mockk<ReservationMenuRepository>()
 
+    private val imageUploadService = mockk<ImageUploadService>()
+
     private val reservationService = ReservationService(
         reservationRepository = reservationRepository,
         carRepository = carRepository,
         storeRepository = storeRepository,
         menuRepository = menuRepository,
-        reservationMenuRepository = reservationMenuRepository
+        reservationMenuRepository = reservationMenuRepository,
+        imageUploadService = imageUploadService
     )
 
     @Test

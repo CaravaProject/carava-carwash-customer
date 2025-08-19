@@ -89,49 +89,7 @@ data class NotificationResponseDto(
     }
 }
 
-/**
- * 알림 목록 응답용 간단한 DTO
- */
-@Schema(description = "알림 목록 응답")
-data class NotificationListResponseDto(
-    @Schema(description = "알림 ID", example = "1")
-    val id: Long,
-    
-    @Schema(description = "알림 유형", example = "RESERVATION_CONFIRMED")
-    val notificationType: NotificationType,
-    
-    @Schema(description = "제목", example = "예약이 확정되었습니다")
-    val title: String,
-    
-    @Schema(description = "메시지", example = "2024년 1월 15일 14:00 예약이 확정되었습니다")
-    val message: String,
-    
-    @Schema(description = "알림 상태", example = "DELIVERED")
-    val status: NotificationStatus,
-    
-    @Schema(description = "생성 시간")
-    val createdAt: LocalDateTime,
-    
-    @Schema(description = "읽지 않음 여부", example = "true")
-    val isUnread: Boolean
-) {
-    companion object {
-        fun from(notification: Notification): NotificationListResponseDto {
-            return NotificationListResponseDto(
-                id = notification.id,
-                notificationType = notification.notificationType,
-                title = notification.title,
-                message = notification.message,
-                status = notification.status,
-                createdAt = notification.createdAt,
-                isUnread = notification.status in listOf(
-                    NotificationStatus.SENT, 
-                    NotificationStatus.DELIVERED
-                )
-            )
-        }
-    }
-}
+
 
 /**
  * 읽지 않은 알림 개수 응답 DTO

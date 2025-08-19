@@ -194,6 +194,7 @@ data class Notification(
      * 예약 발송 시간 확인
      */
     fun isScheduledForFuture(): Boolean {
-        return scheduledAt != null && scheduledAt > LocalDateTime.now()
+        val scheduled = scheduledAt
+        return scheduled != null && scheduled > LocalDateTime.now()
     }
 }

@@ -10,6 +10,7 @@ import com.carava.carwash.reservation.repository.ReservationRepository
 import com.carava.carwash.global.dto.ApiResponse
 import com.carava.carwash.store.entity.StoreStatus
 import com.carava.carwash.store.repository.StoreRepository
+import com.carava.carwash.image.service.ImageUploadService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -23,7 +24,8 @@ class ReservationService(
     private val carRepository: CarRepository,
     private val storeRepository: StoreRepository,
     private val menuRepository: MenuRepository,
-    private val reservationMenuRepository: ReservationMenuRepository
+    private val reservationMenuRepository: ReservationMenuRepository,
+    private val imageUploadService: ImageUploadService
 ) {
 
     fun createReservation(
@@ -88,7 +90,12 @@ class ReservationService(
         }
         reservationMenuRepository.saveAll(reservationMenus)
 
-        // 8. 응답 DTO 생성
+        // 8. 이미지 연결 처리 (만약 beforeImageIds가 있다면)
+        request.beforeImageIds?.let { imageIds ->
+            linkImagesToReservation(savedReservation.id, imageIds, customerId)
+        }
+
+        // 9. 응답 DTO 생성
         val menuDtos = menus.map { menu ->
             ReservationMenuDto(
                 menuId = menu.id,
@@ -199,5 +206,34 @@ class ReservationService(
         reservationRepository.save(cancelledReservation)
 
         return ApiResponse.success<Nothing>(data = null, message = "예약이 취소되었습니다")
+    }
+
+    /**
+     * 예약에 이미지들을 연결하는 메서드
+     */
+    private fun linkImagesToReservation(
+        reservationId: Long, 
+        imageIds: List<Long>, 
+        customerId: Long
+    ) {
+        imageIds.forEach { imageId ->
+            try {
+                val result = imageUploadService.linkImageToEntity(
+                    imageId = imageId,
+                    uploaderId = customerId,
+                    entityType = "RESERVATION",
+                    entityId = reservationId
+                )
+                
+                if (!result.success) {
+                    // 개별 이미지 연결 실패는 로그만 남기고 전체 예약은 계속 진행
+                    // 이미지 연결 실패가 예약 전체를 실패시키지 않도록 함
+                    println("⚠️ 이미지 연결 실패: imageId=$imageId, reason=${result.message}")
+                }
+            } catch (e: Exception) {
+                // 예외가 발생해도 예약은 계속 진행
+                println("⚠️ 이미지 연결 중 예외 발생: imageId=$imageId, error=${e.message}")
+            }
+        }
     }
 } 

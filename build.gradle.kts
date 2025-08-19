@@ -40,6 +40,16 @@ dependencies {
 	// Swagger/OpenAPI - Spring Boot 3.5.0 호환 버전
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
 
+	// Firebase Admin SDK
+	implementation("com.google.firebase:firebase-admin:9.2.0")
+
+	// MinIO Object Storage
+	implementation("io.minio:minio:8.5.7")
+	
+	// Image Processing
+	implementation("org.springframework.boot:spring-boot-starter-webflux") // WebClient for async
+	implementation("net.coobird:thumbnailator:0.4.20") // Image resizing
+
 	// Test
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")

@@ -132,14 +132,3 @@ data class GlobalNotificationSettingUpdateRequestDto(
     val marketingEnabled: Boolean? = null
 )
 
-/**
- * FCM 토큰 등록 요청 DTO
- */
-@Schema(description = "FCM 토큰 등록 요청")
-data class FcmTokenRequestDto(
-    @Schema(description = "FCM 토큰", example = "fGHG3...")
-    val token: String,
-    
-    @Schema(description = "디바이스 정보", example = "iPhone 15 Pro")
-    val deviceInfo: String? = null
-)

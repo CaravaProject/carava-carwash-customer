@@ -160,14 +160,14 @@ class NotificationService(
         recipientType: RecipientType,
         page: Int = 0,
         size: Int = 20
-    ): ApiResponse<Page<NotificationListResponseDto>> {
+    ): ApiResponse<Page<NotificationSummaryDto>> {
         return try {
             val pageable: Pageable = PageRequest.of(page, size)
             val notifications = notificationRepository.findByRecipientIdAndRecipientTypeOrderByCreatedAtDesc(
                 recipientId, recipientType, pageable
             )
             
-            val responsePage = notifications.map { NotificationListResponseDto.from(it) }
+            val responsePage = notifications.map { NotificationSummaryDto.from(it) }
             ApiResponse.success(responsePage, "알림 목록 조회가 완료되었습니다")
             
         } catch (e: Exception) {
@@ -329,5 +329,121 @@ class NotificationService(
         }
         
         return channels
+    }
+
+    /**
+     * 내 알림 목록 조회 (페이징)
+     */
+    fun getMyNotifications(
+        userId: Long,
+        pageable: Pageable,
+        unreadOnly: Boolean = false
+    ): ApiResponse<NotificationListResponseDto> {
+        return try {
+            val notifications = if (unreadOnly) {
+                notificationRepository.findByRecipientIdAndReadAtIsNullOrderByCreatedAtDesc(userId, pageable)
+            } else {
+                notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId, pageable)
+            }
+
+            val notificationDtos = notifications.content.map { NotificationSummaryDto.from(it) }
+            val totalCount = notifications.totalElements
+            val unreadCount = notificationRepository.countByRecipientIdAndReadAtIsNull(userId)
+
+            val response = NotificationListResponseDto(
+                notifications = notificationDtos,
+                totalCount = totalCount,
+                unreadCount = unreadCount
+            )
+
+            ApiResponse.success(response)
+        } catch (e: Exception) {
+            ApiResponse.error("NOTIFICATION_LIST_FAILED", "알림 목록 조회 중 오류가 발생했습니다")
+        }
+    }
+
+    /**
+     * 알림 상세 조회 (읽음 처리)
+     */
+    @Transactional
+    fun getNotificationDetail(userId: Long, notificationId: Long): ApiResponse<NotificationResponseDto> {
+        return try {
+            val notification = notificationRepository.findByIdAndRecipientId(notificationId, userId)
+                ?: return ApiResponse.error("NOTIFICATION_NOT_FOUND", "알림을 찾을 수 없습니다")
+
+            // 읽음 처리
+            if (notification.readAt == null) {
+                notification.markAsRead()
+                notificationRepository.save(notification)
+            }
+
+            ApiResponse.success(NotificationResponseDto.from(notification))
+        } catch (e: Exception) {
+            ApiResponse.error("NOTIFICATION_DETAIL_FAILED", "알림 상세 조회 중 오류가 발생했습니다")
+        }
+    }
+
+    /**
+     * 알림 읽음 처리
+     */
+    @Transactional
+    fun markAsRead(userId: Long, notificationId: Long): ApiResponse<String> {
+        return try {
+            val notification = notificationRepository.findByIdAndRecipientId(notificationId, userId)
+                ?: return ApiResponse.error("NOTIFICATION_NOT_FOUND", "알림을 찾을 수 없습니다")
+
+            notification.markAsRead()
+            notificationRepository.save(notification)
+
+            ApiResponse.success("알림이 읽음 처리되었습니다")
+        } catch (e: Exception) {
+            ApiResponse.error("MARK_READ_FAILED", "알림 읽음 처리 중 오류가 발생했습니다")
+        }
+    }
+
+    /**
+     * 모든 알림 읽음 처리
+     */
+    @Transactional
+    fun markAllAsRead(userId: Long): ApiResponse<String> {
+        return try {
+            val unreadNotifications = notificationRepository.findByRecipientIdAndReadAtIsNull(userId)
+            
+            unreadNotifications.forEach { it.markAsRead() }
+            notificationRepository.saveAll(unreadNotifications)
+
+            ApiResponse.success("모든 알림이 읽음 처리되었습니다")
+        } catch (e: Exception) {
+            ApiResponse.error("MARK_ALL_READ_FAILED", "전체 알림 읽음 처리 중 오류가 발생했습니다")
+        }
+    }
+
+    /**
+     * 알림 삭제
+     */
+    @Transactional
+    fun deleteNotification(userId: Long, notificationId: Long): ApiResponse<String> {
+        return try {
+            val notification = notificationRepository.findByIdAndRecipientId(notificationId, userId)
+                ?: return ApiResponse.error("NOTIFICATION_NOT_FOUND", "알림을 찾을 수 없습니다")
+
+            notificationRepository.delete(notification)
+
+            ApiResponse.success("알림이 삭제되었습니다")
+        } catch (e: Exception) {
+            ApiResponse.error("DELETE_FAILED", "알림 삭제 중 오류가 발생했습니다")
+        }
+    }
+
+    /**
+     * 읽지 않은 알림 개수 조회
+     */
+    fun getUnreadCount(userId: Long): ApiResponse<Long> {
+        return try {
+            val count = notificationRepository.countByRecipientIdAndReadAtIsNull(userId)
+            ApiResponse.success(count)
+        } catch (e: Exception) {
+            ApiResponse.error("UNREAD_COUNT_FAILED", "읽지 않은 알림 개수 조회 중 오류가 발생했습니다")
+        }
     }
 }
